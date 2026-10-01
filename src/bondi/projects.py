@@ -165,6 +165,9 @@ def link_others(cdir: Path, home: Path, github: str, bdir: Path, prefer: Path | 
     for gh, root, mem in _folders(cdir):
         if gh != github.lower() or os.path.realpath(mem) == os.path.realpath(home_mem):
             continue
+        # A worktree's folder resolves to the home checkout, and Claude never reads memory there: leave it alone.
+        if root.resolve() == home.resolve() and not mem.exists() and not mem.is_symlink():
+            continue
         if mem.is_symlink():
             mem.unlink()
         elif mem.is_dir():
