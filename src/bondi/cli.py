@@ -125,7 +125,8 @@ def edit(profile: Annotated[Optional[str], typer.Argument(help="The profile to e
 @app.command("_scan", hidden=True)
 def scan_(json_out: Annotated[bool, flag("--json")] = False, claude_dir: ClaudeDir = None) -> None:
     from bondi.cmd_tools import cmd_scan
-    _run(cmd_scan, json=json_out, claude_dir=claude_dir)
+    # --json feeds the bondi-create skill, so nothing else may print to stdout.
+    _run(cmd_scan, internal=json_out, json=json_out, claude_dir=claude_dir)
 
 
 @app.command("_tidy", hidden=True)
