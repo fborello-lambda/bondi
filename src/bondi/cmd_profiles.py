@@ -2,7 +2,6 @@
 
 import difflib
 import shutil
-import socket
 import uuid
 from pathlib import Path
 
@@ -90,7 +89,7 @@ def add_new(args, src: Path) -> int:
     apply_team(inst, m, bdir)
     if args.remote:
         gitops.set_remote(checkout, args.remote)
-    finish(inst, f"bondi: create {m.name} from {socket.gethostname()}")
+    finish(inst, f"bondi: create {m.name}")
     upsert(inst)
     from bondi import bundle
     bundle.ensure_all([cdir])
@@ -211,7 +210,7 @@ def add_existing(args, url: str) -> int:
     inst = state.Install(name=m.name, claude_dir=layout.collapse(cdir), checkout=layout.collapse(checkout),
                          conflicts=res.conflicts, projects=homes)
     apply_team(inst, m, bdir)
-    finish(inst, f"bondi: install {m.name} on {socket.gethostname()}")
+    finish(inst, f"bondi: add {m.name}")
     upsert(inst)
     from bondi import bundle
     bundle.ensure_all([cdir])
@@ -260,7 +259,7 @@ def sync_one(inst: state.Install, args, fetch: bool) -> bool:
         ui.warn(f"skipped: the Claude folder {inst.claude_dir} is missing. Restore it, or delete the profile folder {inst.checkout} to stop syncing it")
         return False
     if fetch and not args.dry_run:
-        gitops.commit_all(inst.repo, f"bondi: edit {inst.name} on {socket.gethostname()}")
+        gitops.commit_all(inst.repo, f"bondi: edit {inst.name}")
         try:
             ancestor, kept = gitops.pull(inst.repo)
         except GitError as e:
@@ -314,7 +313,7 @@ def sync_one(inst: state.Install, args, fetch: bool) -> bool:
     inst.conflicts = res.conflicts
     inst.projects = homes
     apply_team(inst, m, bdir)
-    finish(inst, f"bondi: sync {inst.name} from {socket.gethostname()}")
+    finish(inst, f"bondi: sync {inst.name}")
     upsert(inst)
     if res.conflicts:
         ui.warn(f"{len(res.conflicts)} conflict(s) left. Run bondi sync in a terminal to choose, or pass "
