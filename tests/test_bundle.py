@@ -33,3 +33,15 @@ def test_a_hand_edited_bundled_file_is_left_alone(machines, monkeypatch):
     monkeypatch.setattr(bundle, "files", lambda: {**shipped, "bondi-notify/SKILL.md": "newer\n"})
     a.run()
     assert skill.read_text() == "my own version\n"
+
+
+def test_a_dry_run_leaves_bundled_skills_alone(machines, monkeypatch):
+    a = machines("alice")
+    seed_claude(a)
+    a.run("export", "--from", str(a.write("p.toml", 'name = "personal"\n[claude]\ndirs = ["memory"]\n')), "-y")
+    skill = a.claude / "skills/bondi-notify/SKILL.md"
+    before = skill.read_text()
+    shipped = bundle.files()
+    monkeypatch.setattr(bundle, "files", lambda: {**shipped, "bondi-notify/SKILL.md": before + "\nNew guidance.\n"})
+    a.run("sync", "--dry-run")
+    assert skill.read_text() == before

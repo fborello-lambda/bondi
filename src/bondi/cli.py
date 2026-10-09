@@ -38,7 +38,7 @@ def _run(fn, internal: bool = False, **fields) -> None:
     from bondi import projects
     projects.clear_cache()
     try:
-        if not internal:
+        if not internal and not args.dry_run:
             refresh_bundle()
         code = fn(args)
     except (UserError, ManifestError, GitError) as e:
