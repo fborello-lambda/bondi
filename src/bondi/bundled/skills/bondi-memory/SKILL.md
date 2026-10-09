@@ -15,6 +15,8 @@ bondi keeps one memory per scope and syncs it to the user's other machines with 
 
 Before you save, check whether an existing file already covers the fact. Update that file instead of adding a new one.
 
+Memory holds facts that stay true. A session hand-off or a status snapshot (open branches, worktree paths, what is pending tonight) is not memory. Keep it in a local file outside the memory folder, because `bondi sync` sends memory to every machine. `bondi sync` also drops the keys Claude Code stamps on a memory file (`originSessionId`, `node_type`, `modified`), so they never reach the profile.
+
 ## Spawned agents
 
 Subagents load `CLAUDE.md` but not project memory. bondi adds a `SubagentStart` hook to `settings.json` that runs `scripts/agent_memory.sh` in this folder. It gives each agent the repo's `MEMORY.md` index and the folder path. `agent_memory = false` in `bondi.toml` turns it off. If an agent needs a rule, put the rule in memory, not only in the agent's brief.

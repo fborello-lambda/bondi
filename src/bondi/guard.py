@@ -1,4 +1,4 @@
-"""Paths bondi never carries, files it skips, and content it refuses to commit."""
+"""Paths bondi never carries, files it skips, content it refuses to commit, and memory keys it drops."""
 
 import re
 from pathlib import PurePosixPath
@@ -82,6 +82,26 @@ def skipped(rel: str) -> bool:
     parts = PurePosixPath(rel).parts
     return (any(p.lower() in SKIP_NAMES for p in parts) or rel.endswith(SKIP_SUFFIXES)
             or rel.endswith(".jsonl") or is_secret_file(rel))
+
+
+# Frontmatter keys Claude Code stamps on a memory file. They name one session and one machine.
+SESSION_KEYS = (b"originSessionId", b"node_type", b"modified")
+_FRONT_RE = re.compile(rb"\A---\r?\n(.*?\r?\n)---(?:\r?\n|\Z)", re.S)
+_SESSION_LINE_RE = re.compile(rb"^[ \t]*(?:" + b"|".join(SESSION_KEYS) + rb"):[^\n]*\n", re.M)
+_EMPTY_METADATA_RE = re.compile(rb"^metadata:[ \t]*\r?\n(?![ \t])", re.M)
+
+
+def is_memory(rel: str) -> bool:
+    return "memory" in PurePosixPath(rel).parts and rel.endswith(".md")
+
+
+def strip_session_keys(data: bytes) -> bytes:
+    """Drop SESSION_KEYS from a leading frontmatter block; every other byte stays."""
+    m = _FRONT_RE.match(data)
+    if not m:
+        return data
+    front = _EMPTY_METADATA_RE.sub(b"", _SESSION_LINE_RE.sub(b"", m.group(1)))
+    return data[:m.start(1)] + front + data[m.end(1):]
 
 
 def find_secret(data: bytes) -> str | None:

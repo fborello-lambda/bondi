@@ -34,7 +34,10 @@ def read_live(it: Item) -> bytes | None:
         return None
     if it.link:
         return layout.collapse(os.readlink(p)).encode() if p.is_symlink() else None
-    return p.read_bytes() if p.is_file() else None
+    if not p.is_file():
+        return None
+    data = p.read_bytes()
+    return guard.strip_session_keys(data) if guard.is_memory(it.rel) else data
 
 
 def read_repo(it: Item, checkout: Path) -> bytes | None:
@@ -127,6 +130,8 @@ def _write_repo(a: Action, checkout: Path) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
     if a.item.link:
         dest.write_bytes(a.live + b"\n")
+    elif guard.is_memory(a.item.rel):
+        dest.write_bytes(a.live)
     else:
         shutil.copy2(a.item.live, dest)
 

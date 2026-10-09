@@ -73,6 +73,8 @@ Every file bondi replaces or deletes on this machine is copied first to
   `~/.docker`, `~/.kube`, and `~/.config/bondi` itself.
 - Any file whose content looks like a token or a password in a URL. bondi leaves it out and says so,
   also when you resolve a conflict with `--keep-local`.
+- The session keys Claude Code stamps on a memory file's frontmatter: `originSessionId`, `node_type`
+  and `modified`. bondi drops them from the profile copy, so a new stamp alone is not an edit.
 
 ## Where things live on a machine
 
